@@ -5,10 +5,10 @@ using namespace std;
 typedef pair<bool,int64_t> p;
 typedef list<char>::iterator & pos;
 
-p E(pos iter); // PS считате результат выражения
-p S(pos iter,int64_t  value); // +-PS считает сумму
-p P(pos iter); // UM
-p M(pos iter,int64_t  value); // делит на UM или умножает на UM
+p E(pos iter); // S(P) считате результат выражения (сумма полиномов)
+p S(pos iter,int64_t  value); // +-S(P) добавляет или вычитает к value следующий полином
+p P(pos iter); // UM - счиатет последовательность умножений или делений
+p M(pos iter,int64_t  value); // делит или умножает value на UM
 p U(pos iter); // унарный минус от числа или выражения в скобках
 p T(pos iter); // дает число или результат выражения в скобках
 p N(pos iter); // собирает число
