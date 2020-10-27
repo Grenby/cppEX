@@ -15,19 +15,15 @@ p N(pos iter); // собирает число
 p D(pos iter); // дает символ числа
 
 p E (pos iter){
-    auto _p = P(iter); // последовательность умножений или делений
-    if(!_p.first)return _p;
-    return S(iter, _p.second);
+    auto _p = P(iter);
+    return _p.first ? S(iter, _p.second) : _p;
 }
 
 p S(pos iter,int64_t value){
-    if (*iter == '+' || *iter == '-') {
-        bool add = (*iter == '+');
-        auto _p = P(++iter);
-        if (!_p.first)return _p;
-        return S(iter, add ? value + _p.second : value - _p.second);
-    }
-    return p{true,value};
+    if (*iter != '+' && *iter != '-')return {true,value};
+    bool add = (*iter == '+');
+    auto _p = P(++iter);
+    return _p.first ? S(iter, add ? value + _p.second : value - _p.second) : _p;
 }
 
 p P(pos iter){
@@ -36,30 +32,29 @@ p P(pos iter){
 }
 
 p M(pos iter,int64_t value){
-    if (*iter == '*' || *iter == '/') {
-        bool ml = (*iter == '*');
-        auto _u = U(++iter);
-        if (!_u.first || (!ml && _u.second == 0))return _u;
-        return M(iter, ml ? value * _u.second : value / _u.second);
-    }return p{true, value};
+    if(* iter != '*' && *iter !='/')return p{true,value};
+    bool ml = (*iter == '*');
+    auto _iter = iter;
+    ++_iter;
+    auto _u = U(++iter);
+    return (!_u.first || (!ml && _u.second == 0) || (*_iter == '-' && *(++_iter) == '-')) ?
+           p{false,0} :
+           M(iter, ml ? value * _u.second : value / _u.second);
 }
 
 p U (pos iter){
-    if (*iter == '-'){
-        auto _u = U(++iter);
-        _u.second = - _u.second;
-        return _u;
-    }
-    return T(iter);
+    if (*iter != '-')return T(iter);
+    if (*iter == '+')++iter;
+    auto _u = U(++iter);
+    return p{_u.first, -_u.second};
 }
 
 p T(pos iter){
-    if (*iter == '('){
-        auto _e = E(++iter);
-        if (*iter != ')')return p{false,0};
-        ++iter;
-        return _e;
-    }else return N(iter);
+    if (*iter != '(')return N(iter);
+    auto _e = E(++iter);
+    if (*iter != ')' || !_e.first)return p{false,0};
+    ++iter;
+    return _e;
 }
 
 p N(pos iter){
@@ -77,30 +72,30 @@ p D(pos iter){
     return p{false,0};
 }
 
-int main(){
+bool justDoIt(){
     list<char> input;
     char c;
-    while (cin>>c){
+    while(cin>>c){
         if (c=='q')break;
         input.push_back(c);
     }
+
     int k =0;
     for (auto item : input){
         if(item =='(')k++;
         else if (item==')')k--;
-        else if (!isdigit(item) && item!='+' && item!='-' && item!='/' && item!='*'){
-            k = 100l;
-            break;
-        }
+        else if (!isdigit(item) && item!='+' && item!='-' && item!='/' && item!='*')return false;
     }
-    if (k){
-        cout<<"ERROR";
-        return 0;
-    }
+    if (k || input.empty())return false;
+
     input.push_back(' ');//костыль от ошибки сегментации
     auto iter = input.begin();
-    auto e = E(iter);
-    if (e.first)cout<<e.second;
-    else cout<<"ERROR";
+    auto _e = E(iter);
+    if (_e.first && *iter == ' ')cout<<_e.second;
+    return _e.first && *iter == ' ';
+}
+
+int main(){
+    if (!justDoIt())cout<<"ERROR_LOL:)";
     return 0;
 }
