@@ -1,3 +1,4 @@
+#include <deque>
 
 template <typename T>
 class AbstractTree{
@@ -14,19 +15,15 @@ public:
 template <typename T>
 class RedBackTree :AbstractTree<T>{
 private:
+
     struct node{
         T& key;
-        int color;
+        char color;
         node *parent = nullptr;
         node *left = nullptr;
         node *right = nullptr;
 
-        node(T key, int color, node *parent) : key(key), color(color), parent(parent) {}
-
-        virtual ~node() {
-            delete left;
-            delete right;
-        }
+        node(T key, char color, node *parent) : key(key), color(color), parent(parent) {}
 
     };
 
@@ -106,8 +103,8 @@ private:
         root->color = BLACK;
     }
 
-    void left_rotate(struct node *x){
-        struct node *y;
+    void left_rotate(node *x){
+        node *y;
 
         y = x->right;
         x->right = y->left;
@@ -121,7 +118,7 @@ private:
         x->parent = y;
     }
 
-    void right_rotate(struct node *x){
+    void right_rotate(node *x){
         node *y;
 
         y = x->left;
@@ -136,7 +133,7 @@ private:
         x->parent = y;
     }
 
-    void red_black_delete(struct node *z){
+    void red_black_delete(node *z){
         node *y, *x;
         int yOriginalColor;
 
@@ -168,7 +165,7 @@ private:
         if(yOriginalColor == BLACK)red_black_delete_fixup(x);
     }
 
-    void red_black_delete_fixup(struct node *x){
+    void red_black_delete_fixup(node *x){
         node *w;
 
         while(x != root && x->color == BLACK){
@@ -237,6 +234,7 @@ private:
     }
 
 public:
+    
     ~RedBackTree() override {
         delete root;
     }
@@ -262,27 +260,122 @@ public:
 template <typename T>
 class AVLTree : AbstractTree<T> {
 private:
+    struct node {
+        T key;
+        unsigned char height;
+        node* left;
+        node* right;
+        explicit node(T k) { key = k; left = right = 0; height = 1; }
+    };
+
+    node* root = nullptr;
+
+    unsigned char height(node* p){
+        return p?p->height:0;
+    }
+
+    int bFactor(node* p){
+        return height(p->right)-height(p->left);
+    }
+
+    void fixHeight(node* p){
+        unsigned char hl = height(p->left);
+        unsigned char hr = height(p->right);
+        p->height = (hl>hr?hl:hr)+1;
+    }
+
+    node* rotateRight(node* p){
+        node* q = p->left;
+        p->left = q->right;
+        q->right = p;
+        fixHeight(p);
+        fixHeight(q);
+        return q;
+    }
+
+    node* rotateLeft(node* q){
+        node* p = q->right;
+        q->right = p->left;
+        p->left = q;
+        fixHeight(q);
+        fixHeight(p);
+        return p;
+    }
+
+    node* balance(node* p) {
+        fixHeight(p);
+        if(bFactor(p) == 2 ){
+            if(bFactor(p->right) < 0 )
+                p->right = rotateRight(p->right);
+            return rotateLeft(p);
+        }
+        if(bFactor(p) == -2 ){
+            if(bFactor(p->left) > 0  )
+                p->left = rotateLeft(p->left);
+            return rotateRight(p);
+        }
+        return p;
+    }
+
+    node* insert(node* p, T &k){
+        if( !p ) return new node(k);
+        if( k < p->key )p->left = insert(p->left,k);
+        else p->right = insert(p->right,k);
+        return balance(p);
+    }
+
+    node* remove(node* p, T k){
+        if( !p ) return 0;
+        if( k < p->key )p->left = remove(p->left,k);
+        else if( p->key < k)p->right = remove(p->right,k);
+        else{
+            node* q = p->left;
+            node* r = p->right;
+            delete p;
+            if( !r ) return q;
+            node* min = findmin(r);
+            min->right = removemin(r);
+            min->left = q;
+            return balance(min);
+        }
+        return balance(p);
+    }
 
 public:
-    ~AVLTree() override {
 
+    ~AVLTree() override {
+        std::deque<node*> q;
+        q.push_back(root);
+        while (!q.empty()) {
+            node* p = q.front();
+            if (p->left)q.push_back(p->left);
+            if (p->right)q.push_back(p->right);
+            delete p;
+            q.pop_front();
+        }
     }
 
     T &insert(T &n) override {
+        root = insert(root, n);
         return n;
     }
 
     bool find(const T &n) override {
+        node* p = root;
+        while (p != nullptr) {
+            if (p->key < n)p = p->left;
+            else if (n < p->key)p = p->right;
+            else return true;
+        }
         return false;
     }
 
     T &erase(const T &n) override {
+        root = remove(root, n);
         return n;
     }
 
 };
-
-
 
 int main(){
     return 0;
