@@ -252,7 +252,8 @@ public:
     }
 
     T &erase(const T &n) override {
-        return red_black_delete(n);
+        red_black_delete(n);
+        return n;
     }
 
 };

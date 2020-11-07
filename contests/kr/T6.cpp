@@ -1,30 +1,27 @@
 #include <vector>
 #include <iostream>
 #include <set>
-
+#include <vector>
+#include <algorithm>
 using namespace std;
 struct three{
     long a,b,c,d;
 
     three(long a, long b, long c,long d){
-        set<int> _s = {a,b,c,d};
-        auto iter = _s.begin();
-        this->a = *iter;
-        iter++;
-        this->b = *iter;
-        iter++;
-        this->c = *iter;
-        iter++;
-        this->d = *iter;
-        iter++;
+        vector<int> v ={a,b,c,d};
+        sort(v.begin(),v.end());
+        this->a = v[0];
+        this->b = v[1];
+        this->c = v[2];
+        this->d = v[3];
     }
 
     bool operator < (const three & rhs) const{
         if (a==rhs.a){
             if (b == rhs.b) {
-                if (d == rhs.d)
-                    return c < rhs.c;
-                return d < rhs.d;
+                if (c == rhs.c)
+                    return d < rhs.d;
+                return c < rhs.c;
             }
             return b < rhs.b;
         }
@@ -32,7 +29,7 @@ struct three{
     }
 
     friend std::ostream & operator<<(std::ostream &os, const three &three){
-        os << three.a << " " << three.b << " " << three.c<<' '<<three.d<<' ';
+        os << three.a << " " << three.b << " " << three.c<<' '<<three.d<<'\n';
         return os;
     }
 };
@@ -40,8 +37,8 @@ struct three{
 
 int main(){
 
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+    //ios::sync_with_stdio(false);
+    //cin.tie(nullptr);
 
     vector<long>list;
     long a;
@@ -56,18 +53,18 @@ int main(){
     cin>>n;
     set<three> setThree;
 
+    if (list.size()<4)return 0;
+
     for (unsigned int i = 0; i < list.size()-3; ++i) {
         for (unsigned int j = i + 1; j < list.size()-2; ++j){
             for (unsigned int k=j + 1; k < list.size()-1; ++k){
                 for (unsigned  int l=k + 1; l < list.size(); ++l)
-                    if (list[i]+list[j]+list[k] == n)setThree.insert(three(list[i],list[j],list[k],list[l]));
+                    if (list[i]+list[j]+list[k]+list[l] == n)setThree.insert(three(list[i],list[j],list[k],list[l]));
             }
         }
     }
 
-    for(auto t:setThree){
-        if (!(t.a==-10 && t.b==-2 && t.c==12))cout<<t;
-    }
+    if (!setThree.empty())for(auto e : setThree)cout<<e;
 
     return 0;
 }
