@@ -1,5 +1,6 @@
 #include <deque>
 #include <iostream>
+#include <vector>
 template <typename T>
 class AbstractTree{
 public:
@@ -8,6 +9,7 @@ public:
         return false;
     };
     virtual void erase(const T& key){};
+    virtual std::vector<T> dump(){ return std::vector<T>{};};
 };
 
 template <typename T>
@@ -261,6 +263,18 @@ private:
 
 public:
 
+    ~RedBackTree(){
+        std::deque<node*> q;
+        q.push_back(root);
+        while (!q.empty()) {
+            node* p = q.front();
+            if (p->left)q.push_back(p->left);
+            if (p->right)q.push_back(p->right);
+            delete p;
+            q.pop_front();
+        }
+    }
+
     void insert(const T &key) override {
         node *n = new node(key);
         root = insertBST(root, n);
@@ -281,6 +295,20 @@ public:
         node *n = deleteBST(root, key);
         fixDeleteRBTree(n);
     };
+
+    std::vector<T> dump()override {
+        std::deque<node*> q;
+        std::vector<T> v;
+        q.push_back(root);
+        while (!q.empty()) {
+            node* p = q.front();
+            if (p->left)q.push_back(p->left);
+            if (p->right)q.push_back(p->right);
+            v.push_back(p->key);
+            q.pop_front();
+        }
+        return v;
+    }
 };
 
 template <typename T>
@@ -409,6 +437,20 @@ public:
 
     void erase(const T &n) override {
         root = remove(root, n);
+    }
+
+    std::vector<T> dump()override {
+        std::deque<node*> q;
+        std::vector<T> v;
+        q.push_back(root);
+        while (!q.empty()) {
+            node* p = q.front();
+            if (p->left)q.push_back(p->left);
+            if (p->right)q.push_back(p->right);
+            v.push_back(p->key);
+            q.pop_front();
+        }
+        return v;
     }
 
 };
