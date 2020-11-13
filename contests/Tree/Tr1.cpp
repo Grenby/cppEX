@@ -1,97 +1,183 @@
 #include <deque>
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <chrono>
+#include <set>
+#include <random>
+
+template <typename T>
+class AbstractTree{
+public:
+    virtual void insert(const T& key){
+        std::cout<<"You're doing something right:)"<<std::endl;
+    };
+
+    virtual bool find(const T& key){
+        std::cout<<"You're doing something right:)"<<std::endl;
+        return false;
+    };
+
+    virtual void erase(const T& key){
+        std::cout<<"You're doing something right:)"<<std::endl;
+    };
+
+    virtual void clear(){
+        std::cout<<"You're doing something right:)"<<std::endl;
+    };
+
+    virtual std::vector<T> dump(){
+        std::cout<<"You're doing something right:)"<<std::endl;
+        return std::vector<T>{};
+    }
+};
+
 
 template <typename T>
 struct node {
     T key;
-    unsigned char param = 1;
     node* left = nullptr;
     node* right = nullptr;
     node* parent = nullptr;
-    explicit node(const T& k):key(k) {}
+    unsigned char param = 1;
+    explicit node(T  k):key(std::move(k)) {}
 };
 
 template <typename T>
-class AbstractTree{
-private:
-    node<T> *root = nullptr;
+class BinaryTree:public AbstractTree<T>{
+
 protected:
-    virtual node<T> *insertNode(node<T>* to,node<T> *&ptr);
-    virtual node<T> *minValueNode(node<T>* n);
+    node<T>* root = nullptr;
 
-    virtual node<T>* rotateRight(node<T>* p){};
-    virtual node<T>* rotateLeft(node<T>* p){};
-    virtual node<T>* remove(node<T> *p,const T&k){};
+    virtual node<T>* rotateLeft(node<T> *n){
+        //TODO
+        return nullptr;
+    };
+    virtual node<T>* rotateRight(node<T> *n){
+        //TODO
+        return nullptr;
+    };
+    virtual node<T>* remove(node<T>*n, const T& key){
+        return nullptr;
+    };
 
-    void setRoot(node<T> *_root) {
-        root = _root;
+    node<T>* findNode(const T& key);
+    virtual node<T>* insertNode(node<T> *_root, node<T> *n);
+    virtual node<T>* findMinNode(node<T> *n);
+    virtual node<T>* findMaxNode(node<T> *n);
+
+    void cl(){
+        clear();
     }
 
 public:
 
-    virtual ~AbstractTree(){
-        std::deque<node<T>*> q;
-        q.push_back(root);
-        while (!q.empty()) {
-            node<T>* p = q.front();
-            if (p->left)q.push_back(p->left);
-            if (p->right)q.push_back(p->right);
-            delete p;
-            q.pop_front();
-        }
+    BinaryTree()= default;
+
+    explicit BinaryTree(const std::vector<T>& args){
     }
 
-    virtual void insert(const T& key){
-        auto *n = new node<T>{key};
-        insertNode(root,n);
-    };
-
-    bool find(const T& key){
-        node<T>* p =this->getRoot();
-        while (p != nullptr) {
-            if (p->key < key)p = p->left;
-            else if (key < p->key)p = p->right;
-            else return true;
-        }
-        return false;
-    };
-
-    virtual void erase(const T& key){};
-
-    node<T> *getRoot() const {
-        return root;
+    ~BinaryTree(){
+        cl();
     }
+
+    void insert(const T& key) override{
+        //TODO something
+    }
+
+    bool find(const T& key) override{
+        return findNode(key);
+    }
+
+    void erase(const T& key) override{
+        //TODO something
+    }
+
+    std::vector<T> dump() override;
+
+    void clear() override;
 };
 
 template<typename T>
-node<T> *AbstractTree<T>::insertNode(node<T> *to, node<T> *&ptr) {
-    if (to == nullptr)
-        return ptr;
-    if (ptr->key < to->key) {
-        to->left = insertNode(to->left, ptr);
-        to->left->parent = to;
-    } else if (ptr->key > to->key) {
-        to->right = insertNode(to->right, ptr);
-        to->right->parent = to;
+node<T>* BinaryTree<T>::findNode(const T &key) {
+    node<T>* p = root;
+    while (p) {
+        if (p->key < key)p = p->right;
+        else if (key < p->key)p = p->left;
+        else return p;
     }
-    return to;
+    return nullptr;
 }
 
 template<typename T>
-node<T> *AbstractTree<T>::minValueNode(node<T> *n) {
+node<T> *BinaryTree<T>::insertNode(node<T> *_root, node<T> *n) {
+    if (_root == nullptr)
+        return n;
+    if (n->key < _root->key) {
+        _root->left = insertNode(_root->left, n);
+        _root->left->parent = _root;
+    } else if (_root->key < n->key) {
+        _root->right = insertNode(_root->right, n);
+        _root->right->parent = _root;
+    }
+    return _root;
+}
+
+template<typename T>
+node<T> *BinaryTree<T>::findMinNode(node<T> *n) {
     node<T> *ptr = n;
     while (ptr->left != nullptr)
         ptr = ptr->left;
     return ptr;
 }
 
-template <typename T>
-class RedBackTree : protected AbstractTree<T> {
-protected:
+template<typename T>
+node<T> *BinaryTree<T>::findMaxNode(node<T> *n) {
+    node<T> *ptr = n;
+    while (ptr->right != nullptr)
+        ptr = ptr->right;
+    return ptr;
+}
 
-    const char BLACK = 1;
-    const char RED = 0;
-    const char DOUBLE_BLACK = 2;
+template<typename T>
+std::vector<T> BinaryTree<T>::dump() {
+    std::deque<node<T>*> q;
+    std::vector<T> v;
+    q.push_back(root);
+    while (!q.empty()) {
+        node<T>* p = q.front();
+        if (p->left)q.push_back(p->left);
+        if (p->right)q.push_back(p->right);
+        v.push_back(p->key);
+        q.pop_front();
+    }
+    return v;
+}
+
+template<typename T>
+void BinaryTree<T>::clear() {
+    if (!root)return;
+    std::deque<node<T>*> q;
+    q.push_back(root);
+    while (!q.empty()) {
+        node<T>* p = q.front();
+        if (p->left)q.push_back(p->left);
+        if (p->right)q.push_back(p->right);
+        delete p;
+        q.pop_front();
+    }
+}
+
+
+
+template <typename T>
+class RedBackTree : public BinaryTree<T> {
+private:
+    protected:
+    const unsigned char BLACK = 1;
+    const unsigned char RED = 0;
+    const unsigned char DOUBLE_BLACK = 2;
 
     char getColor(node<T>* n) {
         if (!n)
@@ -99,17 +185,43 @@ protected:
         return n->param;
     }
 
-    void setColor(node<T>* n, char color) {
+    void setColor(node<T>* n, unsigned char color) {
         if (!n)
             return;
         n->param = color;
     }
 
-    void fixInsertRBTree(node<T>* ptr) {
+    bool hasRedChild(node<T>*n) {
+        return (n->left != nullptr && getColor(n->left) == RED) ||
+               (n->right != nullptr && getColor(n->right) == RED);
+    }
+
+    bool isOnLeft(node<T>*n) { return n == n->parent->left; }
+
+    node<T>* getSibling(node<T>* n){
+        if (n->parent == nullptr)
+            return nullptr;
+        if (isOnLeft(n))
+            return n->parent->right;
+        return n->parent->left;
+    }
+
+    node<T> *getN(node<T> *n) {
+        if (n->left != nullptr && n->right != nullptr)
+            return this->findMinNode(n->right);
+        if (n->left == nullptr && n->right == nullptr)
+            return nullptr;
+        if (n->left != nullptr)
+            return n->left;
+        else
+            return n->right;
+    }
+
+    void fixInsertRBTree(node<T>* n) {
         node<T> *parent = nullptr;
         node<T> *grandparent = nullptr;
-        while (ptr != this->getRoot() && getColor(ptr) == RED && getColor(ptr->parent) == RED) {
-            parent = ptr->parent;
+        while (n != this->root && getColor(n) == RED && getColor(n->parent) == RED) {
+            parent = n->parent;
             grandparent = parent->parent;
             if (parent == grandparent->left) {
                 node<T> *uncle = grandparent->right;
@@ -117,16 +229,16 @@ protected:
                     setColor(uncle, BLACK);
                     setColor(parent, BLACK);
                     setColor(grandparent, RED);
-                    ptr = grandparent;
+                    n = grandparent;
                 } else {
-                    if (ptr == parent->right) {
+                    if (n == parent->right) {
                         rotateLeft(parent);
-                        ptr = parent;
-                        parent = ptr->parent;
+                        n = parent;
+                        parent = n->parent;
                     }
                     rotateRight(grandparent);
                     std::swap(parent->param, grandparent->param);
-                    ptr = parent;
+                    n = parent;
                 }
             } else {
                 node<T> *uncle = grandparent->left;
@@ -134,118 +246,70 @@ protected:
                     setColor(uncle, BLACK);
                     setColor(parent, BLACK);
                     setColor(grandparent, RED);
-                    ptr = grandparent;
+                    n = grandparent;
                 } else {
-                    if (ptr == parent->left) {
+                    if (n == parent->left) {
                         rotateRight(parent);
-                        ptr = parent;
-                        parent = ptr->parent;
+                        n = parent;
+                        parent = n->parent;
                     }
                     rotateLeft(grandparent);
                     std::swap(parent->param, grandparent->param);
-                    ptr = parent;
+                    n = parent;
                 }
             }
         }
-        setColor(this->getRoot(), BLACK);
+        setColor(this->root, BLACK);
     }
 
-    void fixDeleteRBTree(node<T>* n) {
-        if (!n)
+    void fixDeleteRBTree(node<T> *n) {
+        if (n == this->root)
             return;
-
-        if (n == this->getRoot()) {
-            this->setRoot(nullptr);
-            return;
-        }
-
-        if (getColor(n) == RED || getColor(n->left) == RED || getColor(n->right) == RED) {
-            node<T> *child = n->left != nullptr ? n->left : n->right;
-
-            if (n == n->parent->left) {
-                n->parent->left = child;
-                if (child != nullptr)
-                    child->parent = n->parent;
-                setColor(child, BLACK);
-                delete (n);
-            } else {
-                n->parent->right = child;
-                if (child != nullptr)
-                    child->parent = n->parent;
-                setColor(child, BLACK);
-                delete (n);
-            }
-        } else {
-            node<T> *sibling = nullptr;
-            node<T> *parent = nullptr;
-            node<T> *ptr = n;
-            setColor(ptr, DOUBLE_BLACK);
-            while (ptr != this->getRoot() && getColor(ptr) == DOUBLE_BLACK) {
-                parent = ptr->parent;
-                if (ptr == parent->left) {
-                    sibling = parent->right;
-                    if (getColor(sibling) == RED) {
-                        setColor(sibling, BLACK);
-                        setColor(parent, RED);
-                        rotateLeft(parent);
-                    } else {
-                        if (getColor(sibling->left) == BLACK && getColor(sibling->right) == BLACK) {
-                            setColor(sibling, RED);
-                            if (getColor(parent) == RED)
-                                setColor(parent, BLACK);
-                            else
-                                setColor(parent, DOUBLE_BLACK);
-                            ptr = parent;
-                        } else {
-                            if (getColor(sibling->right) == BLACK) {
-                                setColor(sibling->left, BLACK);
-                                setColor(sibling, RED);
-                                rotateRight(sibling);
-                                sibling = parent->right;
-                            }
-                            setColor(sibling, parent->param);
-                            setColor(parent, BLACK);
-                            setColor(sibling->right, BLACK);
-                            rotateLeft(parent);
-                            break;
-                        }
-                    }
+        node<T> *sibling = getSibling(n), *parent = n->parent;
+        if (sibling == nullptr){
+            fixDeleteRBTree(parent);
+        }else{
+            if (getColor(sibling) == RED) {
+                setColor(parent,RED);
+                setColor(sibling,BLACK);
+                if (isOnLeft(sibling)) {
+                    rotateRight(parent);
                 } else {
-                    sibling = parent->left;
-                    if (getColor(sibling) == RED) {
-                        setColor(sibling, BLACK);
-                        setColor(parent, RED);
-                        rotateRight(parent);
-                    } else {
-                        if (getColor(sibling->left) == BLACK && getColor(sibling->right) == BLACK) {
-                            setColor(sibling, RED);
-                            if (getColor(parent) == RED)
-                                setColor(parent, BLACK);
-                            else
-                                setColor(parent, DOUBLE_BLACK);
-                            ptr = parent;
-                        } else {
-                            if (getColor(sibling->left) == BLACK) {
-                                setColor(sibling->right, BLACK);
-                                setColor(sibling, RED);
-                                rotateLeft(sibling);
-                                sibling = parent->left;
-                            }
-                            setColor(sibling, parent->param);
-                            setColor(parent, BLACK);
-                            setColor(sibling->left, BLACK);
+                    rotateLeft(parent);
+                }
+                fixDeleteRBTree(n);
+            } else {
+                if (hasRedChild(sibling)) {
+                    if (sibling->left != nullptr && getColor(sibling->left) == RED) {
+                        if (isOnLeft(sibling)) {
+                            setColor(sibling->left,getColor(sibling));
+                            setColor(sibling,getColor(parent));
                             rotateRight(parent);
-                            break;
+                        } else {
+                            setColor(sibling->left,getColor(parent));
+                            rotateRight(sibling);
+                            rotateLeft(parent);
+                        }
+                    } else {
+                        if (isOnLeft(sibling)) {
+                            setColor(sibling->right,getColor(parent));
+                            rotateLeft(sibling);
+                            rotateRight(parent);
+                        } else {
+                            setColor(sibling->right, getColor(sibling));
+                            setColor(sibling, getColor(parent));
+                            rotateLeft(parent);
                         }
                     }
+                    setColor(parent, BLACK);
+                } else {
+                    setColor(sibling, RED);
+                    if (getColor(parent) == BLACK)
+                        fixDeleteRBTree(parent);
+                    else
+                        setColor(parent, BLACK);
                 }
             }
-            if (n == n->parent->left)
-                n->parent->left = nullptr;
-            else
-                n->parent->right = nullptr;
-            delete (n);
-            setColor(this->getRoot(), BLACK);
         }
     }
 
@@ -259,7 +323,7 @@ protected:
         right_child->parent = p->parent;
 
         if (p->parent == nullptr)
-            this->setRoot(right_child);
+            this->root = right_child;
         else if (p == p->parent->left)
             p->parent->left = right_child;
         else
@@ -280,7 +344,7 @@ protected:
         left_child->parent = ptr->parent;
 
         if (ptr->parent == nullptr)
-            this->setRoot(left_child);
+            this->root = left_child;
         else if (ptr == ptr->parent->left)
             ptr->parent->left = left_child;
         else
@@ -288,38 +352,61 @@ protected:
 
         left_child->right = ptr;
         ptr->parent = left_child;
+        return nullptr;
     }
 
     node<T> *remove(node<T>* r, const T &data) override {
-        if (!r)
-            return r;
-        if (data < r->key)
-            return remove(r->left, data);
-        if (data > r->key)
-            return remove(r->right, data);
-        if (r->left == nullptr || r->right == nullptr)
-            return r;
-        node<T> *tmp = this->minValueNode(r->right);
-        r->key = tmp->key;
-        return remove(r->right, tmp->key);
+        node<T> * v =this->findNode(data);
+        if (v == nullptr)
+            return nullptr;
+        node<T> *u = getN(v);
+        bool uvBlack = ((u == nullptr || getColor(u) == BLACK) && (getColor(v) == BLACK));
+        node<T> *parent = v->parent;
+        if (u == nullptr) {
+            if (v == this->root) {
+                this->root = nullptr;
+            }else {
+                if (uvBlack){
+                    fixDeleteRBTree(v);
+                }else {
+                    if (getSibling(v) != nullptr) {
+                        setColor(getSibling(v), RED);
+                    }
+                }
+                if (isOnLeft(v))parent->left = nullptr;
+                else parent->right = nullptr;
+            }
+            delete v;
+        }
+        return nullptr;
+    }
+
+    void in(const T& key){
+        insert(key);
     }
 
 public:
+    RedBackTree()= default;
+    explicit RedBackTree(const std::vector<T>& args):BinaryTree<T>(args)
+    {
+        for (const auto& x:args)
+            in(x);
+    }
 
     void insert(const T &key) override {
         auto *n = new node<T>(key);
-        this->setRoot(this->insertNode(this->getRoot(), n));
+        n->param = RED;
+        this->root = this->insertNode(this->root, n);
         fixInsertRBTree(n);
     }
 
     void erase(const T &key) override {
-        node<T> *n = remove(this->getRoot(), key);
-        fixDeleteRBTree(n);
+        remove(this->root,key);
     };
 };
 
 template <typename T>
-class AVLTree : AbstractTree<T> {
+class AVLTree : public BinaryTree<T> {
 private:
 
     unsigned char height(node<T>* p){
@@ -337,7 +424,6 @@ private:
     }
 
     node<T>* balance(node<T>* p) {
-        if(!p)return p;
         fixHeight(p);
         if(bFactor(p) == 2 ){
             if(bFactor(p->right) < 0 )
@@ -349,7 +435,16 @@ private:
                 p->left = rotateLeft(p->left);
             return rotateRight(p);
         }
-        return balance(p->parent);
+        return p;
+    }
+
+    node<T>* insert(node<T>* p, const T &k){
+        if( !p ) return new node<T>(k);
+        if (k<p->key)
+            p->left = insert(p->left,k);
+        else if(p->key<k)
+            p->right = insert(p->right,k);
+        return balance(p);
     }
 
     node<T>* rotateRight(node<T>* p)override {
@@ -386,7 +481,7 @@ private:
             node<T>* r = p->right;
             delete p;
             if (!r) return q;
-            node<T>* min = findMin(r);
+            node<T>* min = this->findMinNode(r);
             min->right = removeMin(r);
             min->left = q;
             return min;
@@ -394,40 +489,172 @@ private:
         return p;
     }
 
-public:
-
-    void insert(const T &key) override {
-        auto * n = new node<T>{key};
-        this->setRoot(this->insertNode(this->getRoot(), n));
-        balance(n);
+    void in(const T& key){
+        insert(key);
     }
 
-    bool find(const T &n) override {
-        node<T>* p =this->getRoot();
-        while (p != nullptr) {
-            if (p->key < n)p = p->left;
-            else if (n < p->key)p = p->right;
-            else return true;
-        }
-        return false;
+public:
+
+    AVLTree() = default;
+
+    explicit AVLTree(const std::vector<T>& args){
+        for (const auto& x:args)
+            this->in(x);
+    }
+
+    void insert(const T &key) override {
+        this->root = insert(this->root, key);
     }
 
     void erase(const T &key) override {
-        node<T> *n = remove(this->getRoot(), key);
-        balance(n);
+        this->root = remove(this->root, key);
     }
 
 };
 
-int main(){
 
-    RedBackTree<int> tree;
-    for (int i = 0; i <10 ; ++i) {
-        tree.insert(i);
+int profileInitTree(AbstractTree<int> &tree)
+{
+    std::stringstream ss;
+    for (int i = 0; i <12 ; ++i)
+        ss<<tree.find(i);
+    return (ss.str() == "011100000000" );
+}
+
+int profileInitTree(AbstractTree<std::string> &tree)
+{
+    std::stringstream ss;
+    for (int i = 0; i <12 ; ++i)
+        ss<<tree.find(std::to_string(i));
+    return (ss.str() == "000100000000" );
+}
+
+int profileInitTree(AbstractTree<std::vector<int>> &tree)
+{
+    std::stringstream ss;
+    for (int i = 0; i < 12; i++)
+        ss<<tree.find(std::vector<int>(1,i));
+    return (ss.str() == "010000000000" );
+}
+
+double get_time()
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count()/1e6;
+}
+
+int randInt(int min, int max)
+{
+    unsigned seed = std::chrono::steady_clock::now().time_since_epoch().count();
+    static std::default_random_engine e(seed);
+    std::uniform_int_distribution<int> d(min, max);
+    return d(e);
+}
+
+
+void t(const int NUM){
+    std::cout<<NUM<<'\n';
+
+    std::vector<int> numbers(NUM);
+    for (int i = 0; i < NUM ; ++i)numbers[i] = randInt(-NUM,NUM);
+
+    std::cout<<"insert\n";
+    AVLTree<int> avl;
+    double time = get_time();
+    for (int i = 0; i <NUM ; ++i)avl.insert(numbers[i]);
+    std::cout<<"AVL: "<<get_time()-time<<"\n";
+
+    RedBackTree<int> rb;
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)rb.insert(numbers[i]);
+    std::cout<<"RB: "<<get_time()-time<<"\n";
+
+    std::set<int> s;
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)s.insert(numbers[i]);
+    std::cout<<"sdt::set "<<get_time()-time<<"\n";
+
+
+    for (int i = 0; i < NUM ; ++i)numbers[i] = randInt(-NUM,NUM);
+
+    std::cout<<"\nfind\n";
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)avl.find(numbers[i]);
+    std::cout<<"AVL: "<<get_time()-time<<"\n";
+
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)rb.find(numbers[i]);
+    std::cout<<"RB: "<<get_time()-time<<"\n";
+
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)s.find(numbers[i]);
+    std::cout<<"sdt::set: "<<get_time()-time<<"\n";
+
+    bool correct = true;
+    for (int i = 0; i <NUM ; ++i){
+        int value = randInt(-NUM,NUM);
+        bool find = s.find(value)!=s.end();
+        if (find != rb.find(value) || find != avl.find(value)){
+            correct=false;
+            std::cout<<"Finding is incorrect\n";
+            break;
+        }
     }
-    for (int i = 0; i <12 ; ++i) {
-        //   std::cout<<(AbstractTree)tree(i);
+    if (correct)
+        std::cout<<"All findings are correct\n\n";
+
+    for (int i = 0; i < NUM ; ++i)numbers[i] = randInt(-NUM,NUM);
+
+    std::cout<<"erase\n";
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)avl.erase(numbers[i]);
+    std::cout<<"AVL: "<<get_time()-time<<"\n";
+
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)rb.erase(numbers[i]);
+    std::cout<<"RB: "<<get_time()-time<<"\n";
+
+    time = get_time();
+    for (int i = 0; i <NUM ; ++i)s.erase(numbers[i]);
+    std::cout<<"sdt::set: "<<get_time()-time<<"\n";
+
+    correct = true;
+    for (const auto& x : s){
+        if (!avl.find(x) || !rb.find(x)){
+            std::cout<<"erase is incorrect";
+            correct = false;
+            break;
+        }
     }
+    if(correct){
+        std::cout<<"All erasings are correct\n\n";
+    }else std::cout<<"\n\n";
+}
+
+int main(){
+    t(100);
+    t(100000);
+    t(10000000);
+
+
+    std::vector<int> tst = {1,2,3};
+    AVLTree<int> tree1a(tst);
+    RedBackTree<int> tree1k(tst);
+    AVLTree<std::string> tree2a({"a","b","3"});
+    RedBackTree<std::string> tree2k({"a","b","3"});
+    AVLTree<std::vector<int>> tree3a({{1},{1,2},{2,2}});
+    RedBackTree<std::vector<int>> tree3k({{1},{1,2},{2,2}});
+    if(profileInitTree(tree1a)) std::cout << "AVLTree int init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! AVLTree int init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree1k)) std::cout << "RBTree int init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! RBTree int init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree2a)) std::cout << "AVLTree string init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! AVLTree string init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree2k)) std::cout << "RBTree string init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! RBTree string init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree3a)) std::cout << "AVLTree someshi.. vector<int> init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! AVLTree has seen some shit ---------" << std::endl;
+    if(profileInitTree(tree3k)) std::cout << "RBTree someshi.. vector<int> init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! RBTree has seen some shit ---------" << std::endl;
 
     return 0;
 }
