@@ -555,79 +555,90 @@ void t(const int NUM){
     std::cout<<NUM<<'\n';
 
     std::vector<int> numbers(NUM);
-    for (int i = 0; i < NUM ; ++i)numbers[i] = randInt(-NUM,NUM);
 
-    std::cout<<"insert\n";
     AVLTree<int> avl;
-    double time = get_time();
-    for (int i = 0; i <NUM ; ++i)avl.insert(numbers[i]);
-    std::cout<<"AVL: "<<get_time()-time<<"\n";
-
     RedBackTree<int> rb;
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)rb.insert(numbers[i]);
-    std::cout<<"RB: "<<get_time()-time<<"\n";
-
     std::set<int> s;
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)s.insert(numbers[i]);
-    std::cout<<"sdt::set "<<get_time()-time<<"\n";
 
-
-    for (int i = 0; i < NUM ; ++i)numbers[i] = randInt(-NUM,NUM);
-
-    std::cout<<"\nfind\n";
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)avl.find(numbers[i]);
-    std::cout<<"AVL: "<<get_time()-time<<"\n";
-
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)rb.find(numbers[i]);
-    std::cout<<"RB: "<<get_time()-time<<"\n";
-
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)s.find(numbers[i]);
-    std::cout<<"sdt::set: "<<get_time()-time<<"\n";
-
+    double time =0.0;
     bool correct = true;
-    for (int i = 0; i <NUM ; ++i){
-        int value = randInt(-NUM,NUM);
-        bool find = s.find(value)!=s.end();
-        if (find != rb.find(value) || find != avl.find(value)){
-            correct=false;
-            std::cout<<"Finding is incorrect\n";
-            break;
-        }
+
+    //step 1 : insert
+    {
+        for (int i = 0; i < NUM; ++i)numbers[i] = randInt(-NUM, NUM);
+
+        std::cout << "insert\n";
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)avl.insert(numbers[i]);
+        std::cout << "AVL: " << get_time() - time << "\n";
+
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)rb.insert(numbers[i]);
+        std::cout << "RB: " << get_time() - time << "\n";
+
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)s.insert(numbers[i]);
+        std::cout << "sdt::set " << get_time() - time << "\n";
     }
-    if (correct)
-        std::cout<<"All findings are correct\n\n";
+    //step 2 : find
+    {
+        for (int i = 0; i < NUM; ++i)numbers[i] = randInt(-NUM, NUM);
 
-    for (int i = 0; i < NUM ; ++i)numbers[i] = randInt(-NUM,NUM);
+        std::cout << "\nfind\n";
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)avl.find(numbers[i]);
+        std::cout << "AVL: " << get_time() - time << "\n";
 
-    std::cout<<"erase\n";
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)avl.erase(numbers[i]);
-    std::cout<<"AVL: "<<get_time()-time<<"\n";
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)rb.find(numbers[i]);
+        std::cout << "RB: " << get_time() - time << "\n";
 
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)rb.erase(numbers[i]);
-    std::cout<<"RB: "<<get_time()-time<<"\n";
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)s.find(numbers[i]);
+        std::cout << "sdt::set: " << get_time() - time << "\n";
 
-    time = get_time();
-    for (int i = 0; i <NUM ; ++i)s.erase(numbers[i]);
-    std::cout<<"sdt::set: "<<get_time()-time<<"\n";
-
-    correct = true;
-    for (const auto& x : s){
-        if (!avl.find(x) || !rb.find(x)){
-            std::cout<<"erase is incorrect";
-            correct = false;
-            break;
+        correct = true;
+        for (int i = 0; i < NUM; ++i) {
+            int value = randInt(-NUM, NUM);
+            bool find = s.find(value) != s.end();
+            if (find != rb.find(value) || find != avl.find(value)) {
+                correct = false;
+                std::cout << "Finding is incorrect\n";
+                break;
+            }
         }
+        if (correct)
+            std::cout << "All findings are correct\n\n";
     }
-    if(correct){
-        std::cout<<"All erasings are correct\n\n";
-    }else std::cout<<"\n\n";
+    //step 3 : erase
+    {
+        for (int i = 0; i < NUM; ++i)numbers[i] = randInt(-NUM, NUM);
+
+        std::cout << "erase\n";
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)avl.erase(numbers[i]);
+        std::cout << "AVL: " << get_time() - time << "\n";
+
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)rb.erase(numbers[i]);
+        std::cout << "RB: " << get_time() - time << "\n";
+
+        time = get_time();
+        for (int i = 0; i < NUM; ++i)s.erase(numbers[i]);
+        std::cout << "sdt::set: " << get_time() - time << "\n";
+
+        correct = true;
+        for (const auto &x : s) {
+            if (!avl.find(x) || !rb.find(x)) {
+                std::cout << "erase is incorrect";
+                correct = false;
+                break;
+            }
+        }
+        if (correct) {
+            std::cout << "All erasings are correct\n\n";
+        } else std::cout << "\n\n";
+    }
 }
 
 int main(){

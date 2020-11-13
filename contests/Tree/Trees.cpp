@@ -1,15 +1,25 @@
 #include <deque>
 #include <iostream>
 #include <vector>
+#include <string>
+#include <sstream>
 template <typename T>
 class AbstractTree{
 public:
+    AbstractTree()
+    {}
+    AbstractTree(std::vector<T> args)
+    {
+        this->initVect = args;
+    }
     virtual void insert(const T& key){};
     virtual bool find(const T& key){
-        return false;
+        return true;
     };
     virtual void erase(const T& key){};
     virtual std::vector<T> dump(){ return std::vector<T>{};};
+protected:
+    std::vector<T> initVect;
 };
 
 template <typename T>
@@ -262,8 +272,16 @@ private:
     }
 
 public:
+    RedBackTree()
+    {}
+    RedBackTree(std::vector<T> args) : AbstractTree<T>(args)
+    {
+        for(auto x : this->initVect)
+            insert(x);
+    }
 
     ~RedBackTree(){
+        if(!root) return;
         std::deque<node*> q;
         q.push_back(root);
         while (!q.empty()) {
@@ -408,8 +426,17 @@ private:
     }
 
 public:
+    AVLTree()
+    {}
+    AVLTree(std::vector<T> args) : AbstractTree<T>(args)
+    {
+        for(auto x : this->initVect)
+            insert(x);
+    }
+
 
     ~AVLTree(){
+        if(!root) return;
         std::deque<node*> q;
         q.push_back(root);
         while (!q.empty()) {
@@ -428,8 +455,8 @@ public:
     bool find(const T &n) override {
         node* p = root;
         while (p != nullptr) {
-            if (p->key < n)p = p->left;
-            else if (n < p->key)p = p->right;
+            if (p->key < n)p = p->right;
+            else if (n < p->key)p = p->left;
             else return true;
         }
         return false;
@@ -455,15 +482,52 @@ public:
 
 };
 
+int profileInitTree(AbstractTree<int> &tree)
+{
+    std::stringstream ss;
+    for (int i = 0; i <12 ; ++i)
+        ss<<tree.find(i);
+    return (ss.str() == "011100000000" );
+}
+
+int profileInitTree(AbstractTree<std::string> &tree)
+{
+    std::stringstream ss;
+    for (int i = 0; i <12 ; ++i)
+        ss<<tree.find(std::to_string(i));
+    return (ss.str() == "000100000000" );
+}
+
+int profileInitTree(AbstractTree<std::vector<int>> &tree)
+{
+    std::stringstream ss;
+    for (int i = 0; i < 12; i++)
+        ss<<tree.find(std::vector<int>(1,i));
+    return (ss.str() == "010000000000" );
+}
+
+
 int main(){
 
-    RedBackTree<int> tree;
-    for (int i = 0; i <10 ; ++i) {
-        tree.insert(i);
-    }
-    for (int i = 0; i <12 ; ++i) {
-        std::cout<<tree.find(i);
-    }
+    std::vector<int> tst = {1,2,3};
+    AVLTree<int> tree1a(tst);
+    RedBackTree<int> tree1k(tst);
+    AVLTree<std::string> tree2a({"a","b","3"});
+    RedBackTree<std::string> tree2k({"a","b","3"});
+    AVLTree<std::vector<int>> tree3a({{1},{1,2},{2,2}});
+    RedBackTree<std::vector<int>> tree3k({{1},{1,2},{2,2}});
+    if(profileInitTree(tree1a)) std::cout << "AVLTree int init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! AVLTree int init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree1k)) std::cout << "RBTree int init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! RBTree int init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree2a)) std::cout << "AVLTree string init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! AVLTree string init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree2k)) std::cout << "RBTree string init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! RBTree string init didn't pass! ---------" << std::endl;
+    if(profileInitTree(tree3a)) std::cout << "AVLTree someshi.. vector<int> init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! AVLTree has seen some shit ---------" << std::endl;
+    if(profileInitTree(tree3k)) std::cout << "RBTree someshi.. vector<int> init passed!" << std::endl;
+    else std::cout << "!!!!!WARNING!!!!! RBTree has seen some shit ---------" << std::endl;
 
     return 0;
 }
