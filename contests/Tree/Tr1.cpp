@@ -33,7 +33,6 @@ public:
     }
 };
 
-
 template <typename T>
 struct node {
     T key;
@@ -169,10 +168,8 @@ void BinaryTree<T>::clear() {
     }
 }
 
-
-
 template <typename T>
-class RedBackTree : public BinaryTree<T> {
+class RedBlackTree : public BinaryTree<T> {
 private:
     protected:
     const unsigned char BLACK = 1;
@@ -355,8 +352,7 @@ private:
         return nullptr;
     }
 
-    node<T> *remove(node<T>* r, const T &data) override {
-        node<T> * v =this->findNode(data);
+    node<T> *remove(node<T>* v){
         if (v == nullptr)
             return nullptr;
         node<T> *u = getN(v);
@@ -377,8 +373,36 @@ private:
                 else parent->right = nullptr;
             }
             delete v;
+        }else if (v->left == nullptr || v->right == nullptr) {
+            if (v == this->root) {
+                v->key = u->key;
+                v->left = v->right = nullptr;
+                delete u;
+            } else {
+                if (isOnLeft(v)) {
+                    parent->left = u;
+                } else {
+                    parent->right = u;
+                }
+                delete v;
+                u->parent = parent;
+                if (uvBlack) {
+                    fixDeleteRBTree(u);
+                } else u->param = BLACK;
+            }
+            return nullptr;
+        }else {
+            swapValues(u, v);
+            remove(u);
         }
         return nullptr;
+    }
+
+    void swapValues(node<T> *u, node<T> *v) {
+        T temp;
+        temp = u->key;
+        u->key = v->key;
+        v->key = temp;
     }
 
     void in(const T& key){
@@ -386,8 +410,8 @@ private:
     }
 
 public:
-    RedBackTree()= default;
-    explicit RedBackTree(const std::vector<T>& args):BinaryTree<T>(args)
+    RedBlackTree()= default;
+    explicit RedBlackTree(const std::vector<T>& args): BinaryTree<T>(args)
     {
         for (const auto& x:args)
             in(x);
@@ -401,7 +425,11 @@ public:
     }
 
     void erase(const T &key) override {
-        remove(this->root,key);
+        if (this->root == nullptr)
+            return;
+        node<T> *v = this->findNode(key);
+        if (!v)return;
+        remove(v);
     };
 };
 
@@ -456,7 +484,7 @@ private:
         return q;
     }
 
-    node<T>* rotateLeft(node<T>* q)override {
+   node<T>* rotateLeft(node<T>* q)override {
         node<T>* p = q->right;
         q->right = p->left;
         p->left = q;
@@ -557,10 +585,13 @@ void t(const int NUM){
     std::vector<int> numbers(NUM);
 
     AVLTree<int> avl;
-    RedBackTree<int> rb;
+    RedBlackTree<int> rb;
     std::set<int> s;
 
-    double time =0.0;
+    double time1 =0.0;
+    double time2 =0.0;
+    double time3 =0.0;
+
     bool correct = true;
 
     //step 1 : insert
@@ -568,34 +599,34 @@ void t(const int NUM){
         for (int i = 0; i < NUM; ++i)numbers[i] = randInt(-NUM, NUM);
 
         std::cout << "insert\n";
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)avl.insert(numbers[i]);
-        std::cout << "AVL: " << get_time() - time << "\n";
+        std::cout<<"AVL: " << get_time() - time1 << "\n";
 
-        time = get_time();
+        time2 = get_time();
         for (int i = 0; i < NUM; ++i)rb.insert(numbers[i]);
-        std::cout << "RB: " << get_time() - time << "\n";
+        std::cout << "RB: " << get_time() - time2 << "\n";
 
-        time = get_time();
+        time3 = get_time();
         for (int i = 0; i < NUM; ++i)s.insert(numbers[i]);
-        std::cout << "sdt::set " << get_time() - time << "\n";
+        std::cout << "sdt::set " << get_time() - time3 << "\n";
     }
     //step 2 : find
     {
         for (int i = 0; i < NUM; ++i)numbers[i] = randInt(-NUM, NUM);
 
         std::cout << "\nfind\n";
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)avl.find(numbers[i]);
-        std::cout << "AVL: " << get_time() - time << "\n";
+        std::cout << "AVL: " << get_time() - time1 << "\n";
 
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)rb.find(numbers[i]);
-        std::cout << "RB: " << get_time() - time << "\n";
+        std::cout << "RB: " << get_time() - time1 << "\n";
 
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)s.find(numbers[i]);
-        std::cout << "sdt::set: " << get_time() - time << "\n";
+        std::cout << "sdt::set: " << get_time() - time1 << "\n";
 
         correct = true;
         for (int i = 0; i < NUM; ++i) {
@@ -615,17 +646,17 @@ void t(const int NUM){
         for (int i = 0; i < NUM; ++i)numbers[i] = randInt(-NUM, NUM);
 
         std::cout << "erase\n";
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)avl.erase(numbers[i]);
-        std::cout << "AVL: " << get_time() - time << "\n";
+        std::cout << "AVL: " << get_time() - time1 << "\n";
 
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)rb.erase(numbers[i]);
-        std::cout << "RB: " << get_time() - time << "\n";
+        std::cout << "RB: " << get_time() - time1 << "\n";
 
-        time = get_time();
+        time1 = get_time();
         for (int i = 0; i < NUM; ++i)s.erase(numbers[i]);
-        std::cout << "sdt::set: " << get_time() - time << "\n";
+        std::cout << "sdt::set: " << get_time() - time1 << "\n";
 
         correct = true;
         for (const auto &x : s) {
@@ -643,17 +674,18 @@ void t(const int NUM){
 
 int main(){
     t(100);
-    t(100000);
-    t(10000000);
+    t(1000);
+    t(10000);
+    t(1000000);
 
 
     std::vector<int> tst = {1,2,3};
     AVLTree<int> tree1a(tst);
-    RedBackTree<int> tree1k(tst);
+    RedBlackTree<int> tree1k(tst);
     AVLTree<std::string> tree2a({"a","b","3"});
-    RedBackTree<std::string> tree2k({"a","b","3"});
+    RedBlackTree<std::string> tree2k({"a", "b", "3"});
     AVLTree<std::vector<int>> tree3a({{1},{1,2},{2,2}});
-    RedBackTree<std::vector<int>> tree3k({{1},{1,2},{2,2}});
+    RedBlackTree<std::vector<int>> tree3k({{1}, {1, 2}, {2, 2}});
     if(profileInitTree(tree1a)) std::cout << "AVLTree int init passed!" << std::endl;
     else std::cout << "!!!!!WARNING!!!!! AVLTree int init didn't pass! ---------" << std::endl;
     if(profileInitTree(tree1k)) std::cout << "RBTree int init passed!" << std::endl;
@@ -668,4 +700,5 @@ int main(){
     else std::cout << "!!!!!WARNING!!!!! RBTree has seen some shit ---------" << std::endl;
 
     return 0;
+
 }
